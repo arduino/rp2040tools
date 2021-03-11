@@ -28,8 +28,8 @@ ENV PATH=/opt/osxcross/target/bin/:$PATH
 RUN mkdir -p /workdir
 WORKDIR /workdir
 
-# debug/utility
+# debug/utilities
 RUN alias ll="ls -lah"
-RUN apt-get install -y tree
+RUN apt-get install -y tree cmake-curses-gui nano
 
 ENTRYPOINT ["/bin/bash"]
