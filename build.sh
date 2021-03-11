@@ -2,19 +2,42 @@
 #temporary fix for osx
 export PATH=$PATH:/usr/local/Cellar/pkg-config/0.29.2/bin/
 
+
+apt install libfl-dev
 # rm -rf *
+export CROSS_COMPILE=x86_64-ubuntu12.04-linux-gnu
+cd deps/eudev-3.1.5
+export UDEV_DIR=`pwd`
+./autogen.sh
+./configure --enable-static --disable-shared --disable-blkid --disable-kmod  --disable-manpages --host=${CROSS_COMPILE}
+make clean
+make -j4
+cd ..
 
-# wget https://github.com/libusb/libusb/releases/download/v1.0.24/libusb-1.0.24.7z
-# 7z x libusb-1.0.24.7z -olibusb-1.0.24
-# does not contains the .a lib but only the .h
+export CFLAGS="-I$UDEV_DIR/src/libudev/"
+export LDFLAGS="-L$UDEV_DIR/src/libudev/.libs/"
+export LIBS="-ludev"
 
-git clone https://github.com/libusb/libusb.git
-cd libusb
+
+# too recent they want c11 support
+# wget https://github.com/libusb/libusb/releases/download/v1.0.24/libusb-1.0.24.7z # production version
+# wget https://github.com/libusb/libusb/releases/download/v1.0.24/libusb-1.0.24.tar.bz2 # developement version
+# 7z x libusb-1.0.24.7z -olibusb-1.0.24-p # the one with .h
+# tar -xf libusb-1.0.24.tar.bz2
+
+cd libusb-1.0.20
 export LIBUSB_DIR=`pwd`
-./configure --enable-static --disable-shared --host=${CROSS_COMPILE} # do not work
+./configure --enable-static --disable-shared --host=${CROSS_COMPILE}
 make clean
 make
 cd ..
+
+export LIBUSB1_CFLAGS="-I$LIBUSB_DIR/libusb/"
+export LIBUSB1_LIBS="-L$LIBUSB_DIR/libusb/.libs/ -lusb-1.0 -lpthread"
+
+export LIBUSB_1_0_CFLAGS="-I$LIBUSB_DIR/libusb/"
+export LIBUSB_1_0_LIBS="-L$LIBUSB_DIR/libusb/.libs/ -lusb-1.0 -lpthread"
+
 
 git clone https://github.com/raspberrypi/pico-sdk.git
 git clone https://github.com/raspberrypi/picotool.git
@@ -25,7 +48,7 @@ export PICO_SDK_PATH=$PWD/pico-sdk
 cd picotool
 mkdir build
 cd build
-cmake -DCMAKE_C_COMPILER=x86_64-ubuntu12.04-linux-gnu-gcc .. # missing libUSB
+cmake -DCMAKE_C_COMPILER=x86_64-ubuntu12.04-linux-gnu-gcc -DCXX=x86_64-ubuntu12.04-linux-gnu-g++ .. # missing libUSB
 make
 cd ..
 cd ..
