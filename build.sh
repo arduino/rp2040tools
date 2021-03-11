@@ -32,11 +32,11 @@ make clean
 make
 cd ..
 
-export LIBUSB1_CFLAGS="-I$LIBUSB_DIR/libusb/"
-export LIBUSB1_LIBS="-L$LIBUSB_DIR/libusb/.libs/ -lusb-1.0 -lpthread"
+# export LIBUSB1_CFLAGS="-I$LIBUSB_DIR/libusb/"
+# export LIBUSB1_LIBS="-L$LIBUSB_DIR/libusb/.libs/ -lusb-1.0 -lpthread"
 
-export LIBUSB_1_0_CFLAGS="-I$LIBUSB_DIR/libusb/"
-export LIBUSB_1_0_LIBS="-L$LIBUSB_DIR/libusb/.libs/ -lusb-1.0 -lpthread"
+# export LIBUSB_1_0_CFLAGS="-I$LIBUSB_DIR/libusb/"
+# export LIBUSB_1_0_LIBS="-L$LIBUSB_DIR/libusb/.libs/ -lusb-1.0 -lpthread"
 
 
 git clone https://github.com/raspberrypi/pico-sdk.git
@@ -48,7 +48,8 @@ export PICO_SDK_PATH=$PWD/pico-sdk
 cd picotool
 mkdir build
 cd build
-cmake -DCMAKE_C_COMPILER=x86_64-ubuntu12.04-linux-gnu-gcc -DCXX=x86_64-ubuntu12.04-linux-gnu-g++ .. # missing libUSB
+#need to find a way to add the libudev.a
+cmake -DCMAKE_C_COMPILER=$CROSS_COMPILE-gcc -DCMAKE_CXX_COMPILER=$CROSS_COMPILE-g++ -DLIBUSB_LIBRARIES=$LIBUSB_DIR/libusb/.libs/libusb-1.0.a -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR/libusb/ ..
 make
 cd ..
 cd ..
