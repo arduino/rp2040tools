@@ -6,7 +6,7 @@ export PATH=$PATH:/usr/local/Cellar/pkg-config/0.29.2/bin/
 apt install libfl-dev
 # rm -rf *
 export CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu
-cd deps/eudev-3.1.5
+cd /opt/lib/eudev-3.1.5
 export UDEV_DIR=`pwd`
 ./autogen.sh
 ./configure --enable-static --disable-shared --disable-blkid --disable-kmod  --disable-manpages --host=${CROSS_COMPILE}
@@ -48,10 +48,13 @@ export PICO_SDK_PATH=$PWD/pico-sdk
 cd picotool
 mkdir build
 cd build
-#need to find a way to add the libudev.a
+# Before cmake apply the patch
+# use the libusbudev.a generated in the dockerfile instead of libusb.a
 cmake -DCMAKE_C_COMPILER=$CROSS_COMPILE-gcc -DCMAKE_CXX_COMPILER=$CROSS_COMPILE-g++ -DLIBUSB_LIBRARIES=$LIBUSB_DIR/libusb/.libs/libusb-1.0.a -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR/libusb/ ..
-make VERBOSE=1 # allows to see the failing linking command: it misses libudev: after this run the link command adding it:
-/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/x86_64-ubuntu16.04-linux-gnu-g++  -L/workdir/deps/eudev-3.1.5/src/libudev/.libs/  -L/workdir/deps/eudev-3.1.5/src/libudev/.libs/ $LIBUSB1_LIBS CMakeFiles/picotool.dir/main.cpp.o CMakeFiles/picotool.dir/picoboot_connection/picoboot_connection_cxx.cpp.o CMakeFiles/picotool.dir/picoboot_connection/picoboot_connection.c.o  -o picotool  /workdir/deps/libusb-1.0.20/libusb/.libs/libusb-1.0.a /workdir/deps/eudev-3.1.5/src/udev/.libs/libudev-core.a
+make
+#  not required anymore ⬇️
+# make VERBOSE=1 # allows to see the failing linking command: it misses libudev: after this run the link command adding it:
+# /opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/x86_64-ubuntu16.04-linux-gnu-g++  -L/workdir/deps/eudev-3.1.5/src/libudev/.libs/  -L/workdir/deps/eudev-3.1.5/src/libudev/.libs/ $LIBUSB1_LIBS CMakeFiles/picotool.dir/main.cpp.o CMakeFiles/picotool.dir/picoboot_connection/picoboot_connection_cxx.cpp.o CMakeFiles/picotool.dir/picoboot_connection/picoboot_connection.c.o  -o picotool  /workdir/deps/libusb-1.0.20/libusb/.libs/libusb-1.0.a /workdir/deps/eudev-3.1.5/src/udev/.libs/libudev-core.a
 file picotool # picotool: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 4.4.94, with debug_info, not stripped
 # TODO static link it with -static
 ldd picotool
