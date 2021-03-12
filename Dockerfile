@@ -32,4 +32,14 @@ WORKDIR /workdir
 RUN alias ll="ls -lah"
 RUN apt-get install -y tree cmake-curses-gui nano
 
+# Handle libusb and libudev
+COPY deps/ /opt/lib/
+ENV CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu
+RUN /opt/lib/build_libs.sh
+ENV CROSS_COMPILE=arm-rpi-4.9.3-linux-gnueabihf # FIX checking host system type... Invalid configuration `arm-rpi-4.9.3-linux-gnueabihf': machine `arm-rpi-4.9.3' not recognized \ configure: error: /bin/bash ./config.sub arm-rpi-4.9.3-linux-gnueabihf failed
+RUN /opt/lib/build_libs.sh
+ENV CROSS_COMPILE=gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu # FIX checking host system type... Invalid configuration `gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu': machine `gcc-linaro-7.2.1-2017.11-x86_64_aarch64' not recognized \ configure: error: /bin/bash ./config.sub gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu failed
+RUN /opt/lib/build_libs.sh
+#TODO missing darwin_amd64, linux_386 and windows_386
+
 ENTRYPOINT ["/bin/bash"]
