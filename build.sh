@@ -46,11 +46,10 @@ export PICO_SDK_PATH=$PWD/pico-sdk
 
 #linux x86_64
 cd picotool
+git apply /workdir/patches/picotool_cmakelists.patch
 mkdir build
 cd build
-# Before cmake apply the patch
-# use the libusbudev.a generated in the dockerfile instead of libusb.a
-cmake -DCMAKE_C_COMPILER=$CROSS_COMPILE-gcc -DCMAKE_CXX_COMPILER=$CROSS_COMPILE-g++ -DLIBUSB_LIBRARIES=$LIBUSB_DIR/libusb/.libs/libusb-1.0.a -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR/libusb/ ..
+cmake -DCMAKE_C_COMPILER=$CROSS_COMPILE-gcc -DCMAKE_CXX_COMPILER=$CROSS_COMPILE-g++ -DLIBUSB_LIBRARIES=/opt/lib/$CROSS_COMPILE/libusbudev.a -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR/libusb/ ..
 make
 #  not required anymore ⬇️
 # make VERBOSE=1 # allows to see the failing linking command: it misses libudev: after this run the link command adding it:
