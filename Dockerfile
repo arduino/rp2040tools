@@ -10,18 +10,25 @@ RUN apt-get update && \
     apt-get clean
 # Install toolchains in /opt
 RUN curl downloads.arduino.cc/tools/internal/toolchains.tar.gz | tar -xz "opt"
+# i686-ubuntu16.04-linux-gnu-gcc: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.33' not found ⬇️
+RUN curl downloads.arduino.cc/tools/internal/i686-ubuntu16.04-linux-gnu.tar.gz | tar -xzC /opt
+# Remove useless toolchains:
+RUN rm -r /opt/arm-rpi-4.9.3-linux-gnueabihf/
+RUN rm -r /opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu/
+RUN rm -r /opt/*ubuntu12.04*
+#install proper arm toolchains
+RUN wget -qO- https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf.tar.xz | tar -xJC /opt
+RUN wget -qO- https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz | tar -xJC /opt
 
 # Set toolchains paths
 # arm-linux-gnueabihf-gcc -> linux_arm
-ENV PATH=/opt/arm-rpi-4.9.3-linux-gnueabihf/bin/:$PATH
+ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:$PATH
 # aarch64-linux-gnu-gcc -> linux_arm64
-ENV PATH=/opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu/bin/:$PATH
-# i686-ubuntu12.04-linux-gnu-gcc -> linux_386
-ENV PATH=/opt/i686-ubuntu12.04-linux-gnu/bin/:$PATH
-# x86_64-ubuntu12.04-linux-gnu-gcc -> linux_amd64
-ENV PATH=/opt/x86_64-ubuntu12.04-linux-gnu/bin/:$PATH
-# x86_64-ubuntu16.04-linux-gnu-gcc -> linux_amd64 with newer gcc
+ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:$PATH
+# x86_64-ubuntu16.04-linux-gnu-gcc -> linux_amd64
 ENV PATH=/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:$PATH
+# i686-ubuntu16.04-linux-gnu-gcc -> linux_386
+ENV PATH=/opt/i686-ubuntu16.04-linux-gnu/bin/:$PATH
 # o64-clang -> darwin_amd64
 ENV PATH=/opt/osxcross/target/bin/:$PATH
 
@@ -34,12 +41,15 @@ RUN apt-get install -y tree cmake-curses-gui nano
 
 # Handle libusb and libudev
 COPY deps/ /opt/lib/
+# compiler name is arm-linux-gnueabihf-gcc '-gcc' is added by ./configure
 ENV CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu
 RUN /opt/lib/build_libs.sh
-ENV CROSS_COMPILE=arm-rpi-4.9.3-linux-gnueabihf # FIX checking host system type... Invalid configuration `arm-rpi-4.9.3-linux-gnueabihf': machine `arm-rpi-4.9.3' not recognized \ configure: error: /bin/bash ./config.sub arm-rpi-4.9.3-linux-gnueabihf failed
+ENV CROSS_COMPILE=arm-linux-gnueabihf
 RUN /opt/lib/build_libs.sh
-ENV CROSS_COMPILE=gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu # FIX checking host system type... Invalid configuration `gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu': machine `gcc-linaro-7.2.1-2017.11-x86_64_aarch64' not recognized \ configure: error: /bin/bash ./config.sub gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu failed
+ENV CROSS_COMPILE=aarch64-linux-gnu
 RUN /opt/lib/build_libs.sh
-#TODO missing darwin_amd64, linux_386 and windows_386
+ENV CROSS_COMPILE=i686-ubuntu16.04-linux-gnu
+RUN /opt/lib/build_libs.sh
+#TODO missing darwin_amd64 and windows_386
 
 ENTRYPOINT ["/bin/bash"]
