@@ -3,10 +3,10 @@
 export PATH=$PATH:/usr/local/Cellar/pkg-config/0.29.2/bin/
 
 
-apt install libfl-dev
+apt install libfl-dev -y
 # rm -rf *
 export CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu
-cd /opt/lib/eudev-3.1.5
+cd /opt/lib/eudev-3.2.10
 export UDEV_DIR=`pwd`
 ./autogen.sh
 ./configure --enable-static --disable-shared --disable-blkid --disable-kmod  --disable-manpages --host=${CROSS_COMPILE}

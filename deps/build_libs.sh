@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /opt/lib/eudev-3.1.5
+cd /opt/lib/eudev-3.2.10
 export UDEV_DIR=`pwd`
 ./autogen.sh
 ./configure --enable-static --disable-shared --disable-blkid --disable-kmod  --disable-manpages --host=${CROSS_COMPILE}
@@ -20,6 +20,6 @@ mkdir -p ${CROSS_COMPILE}/libudev
 cd ${CROSS_COMPILE}/libusb/
 ar -x ../../libusb-1.0.20/libusb/.libs/libusb-1.0.a
 cd ../libudev/
-ar -x ../../eudev-3.1.5/src/libudev/.libs/libudev.a
+ar -x ../../eudev-3.2.10/src/libudev/.libs/libudev.a
 cd ..
 ar -qc libusbudev.a libudev/* libusb/*
