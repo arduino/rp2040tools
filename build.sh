@@ -35,6 +35,7 @@ cd ..
 cd ..
 
 cd pico-sdk/tools/elf2uf2/
+git apply /workdir/patches/elf2uf2_cmakelists.patch
 rm -rf build
 mkdir build
 cd build
