@@ -50,6 +50,7 @@ ENV CROSS_COMPILE=aarch64-linux-gnu
 RUN /opt/lib/build_libs.sh
 ENV CROSS_COMPILE=i686-ubuntu16.04-linux-gnu
 RUN /opt/lib/build_libs.sh
-#TODO missing darwin_amd64 and windows_386
+ENV CROSS_COMPILE=i686-w64-mingw32
+RUN /opt/lib/build_libs.sh
 
 ENTRYPOINT ["/bin/bash"]

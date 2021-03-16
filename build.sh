@@ -1,4 +1,9 @@
 #!/bin/bash -ex
+
+if [[ ${ARCH} == *mingw* ]]; then
+export CFLAGS="-mno-ms-bitfields $CFLAGSk"
+fi
+
 #temporary fix for osx
 export PATH=$PATH:/usr/local/Cellar/pkg-config/0.29.2/bin/
 
@@ -47,6 +52,9 @@ export PICO_SDK_PATH=$PWD/pico-sdk
 #linux x86_64
 cd picotool
 git apply /workdir/patches/picotool_cmakelists.patch
+if [[ ${ARCH} == *mingw* ]]; then
+git apply /workdir/patches/windows_mingw.patch
+fi
 mkdir build
 cd build
 cmake -DCMAKE_C_COMPILER=$CROSS_COMPILE-gcc -DCMAKE_CXX_COMPILER=$CROSS_COMPILE-g++ -DLIBUSB_LIBRARIES=/opt/lib/$CROSS_COMPILE/libusbudev.a -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR/libusb/ ..
@@ -72,7 +80,7 @@ cd ..
 cd pico-sdk/tools/elf2uf2/
 mkdir build
 cd build
-cmake -DCMAKE_C_COMPILER=x86_64-ubuntu12.04-linux-gnu-gcc ..
+cmake -DCMAKE_C_COMPILER=$CROSS_COMPILE-gcc -DCMAKE_CXX_COMPILER=$CROSS_COMPILE-g++ ..
 make
 cd ..
 cd ..
