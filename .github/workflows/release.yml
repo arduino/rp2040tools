@@ -120,7 +120,7 @@ jobs:
     - name: upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: ${{matrix.os}}_{{matrix.arch}}
+        name: ${{matrix.os}}_${{matrix.arch}}
         path: |
-          $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/build/elf2uf2${{ matrix.extension }}
-          $GITHUB_WORKSPACE/picotool/build/picotool${{ matrix.extension }}
+          ${{ github.workspace }}/pico-sdk/tools/elf2uf2/build/elf2uf2${{ matrix.extension }}
+          ${{ github.workspace }}/picotool/build/picotool${{ matrix.extension }}
