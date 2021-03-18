@@ -17,7 +17,7 @@ var (
 	binary  = flag.String("D", "", "Path of the elf file to load")
 )
 
-const Version = "1.0.0"
+const Version = "1.0.1"
 
 func PrintlnVerbose(a ...interface{}) {
 	if *verbose {
