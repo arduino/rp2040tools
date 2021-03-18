@@ -8,11 +8,12 @@ jobs:
     runs-on:
       ubuntu-latest
     env:
-      PICO_SDK_PATH: ${GITHUB_WORKSPACE}/pico-sdk
+      PICO_SDK_PATH: $PWD/pico-sdk
       LIBUSB_DIR: /opt/lib/libusb-1.0.20/libusb/
     strategy:
       matrix:
         os: [linux, darwin, windows]
+        arch: [amd64]
         include:
         - os: linux
           arch: 386
@@ -34,6 +35,9 @@ jobs:
           arch: 386
           cross_compile: i686-w64-mingw32
           extension: .exe
+        exclude:
+          - os: windows
+            arch: amd64
 
     container:
       image: ghcr.io/arduino/crossbuild:0.1.0
