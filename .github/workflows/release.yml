@@ -87,6 +87,7 @@ jobs:
         cd build
         cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
         make
+        mv picotool${{ matrix.extension }} /tmp/
       if: matrix.os != 'darwin'
 
     - name: build picotool for macos
@@ -96,6 +97,7 @@ jobs:
         cd build
         cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="-framework IOKit -framework Cocoa" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
         make
+        mv picotool${{ matrix.extension }} /tmp/
       if: matrix.os == 'darwin'
 
     - name: build elf2uf2
@@ -106,6 +108,7 @@ jobs:
         cd build
         cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ ..
         make
+        mv elf2uf2${{ matrix.extension }} /tmp/
       if: matrix.os != 'darwin'
 
     - name: build elf2uf2 for macos
@@ -115,6 +118,7 @@ jobs:
         cd build
         cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="-framework IOKit -framework Cocoa" ..
         make
+        mv elf2uf2${{ matrix.extension }} /tmp/
       if: matrix.os == 'darwin'
 
     - name: upload artifacts
@@ -122,5 +126,5 @@ jobs:
       with:
         name: ${{matrix.os}}_${{matrix.arch}}
         path: |
-          ${{ github.workspace }}/pico-sdk/tools/elf2uf2/build/elf2uf2${{ matrix.extension }}
-          ${{ github.workspace }}/picotool/build/picotool${{ matrix.extension }}
+          /tmp/elf2uf2${{ matrix.extension }}
+          /tmp/picotool${{ matrix.extension }}
