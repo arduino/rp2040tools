@@ -25,10 +25,10 @@
             },
             {
               "host": "i686-linux-gnu",
-              "url": "http://downloads.arduino.cc/tools/%%FILENAME_LINUX_ARM64%%",
+              "url": "http://downloads.arduino.cc/tools/%%FILENAME_LINUX_386%%",
               "archiveFileName": "%%FILENAME_LINUX_386%%",
-              "size": "%%SIZE_LINUX_ARM64%%",
-              "checksum": "SHA-256:%%SHA_LINUX_ARM64%%"
+              "size": "%%SIZE_LINUX_386%%",
+              "checksum": "SHA-256:%%SHA_LINUX_386%%"
             },
             {
               "host": "i686-mingw32",
