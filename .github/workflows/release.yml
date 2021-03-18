@@ -62,23 +62,23 @@ jobs:
         repository: raspberrypi/pico-sdk
         path: pico-sdk
 
-    - name: set env vars
+    - name: Set env vars
       run: | 
         echo "LIBUSBUDEV=/opt/lib/${{ matrix.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
         echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
       if: matrix.os != 'darwin'
     
-    - name: set env vars for macos
+    - name: Set env vars for macos
       run: |
         echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
         echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
       if: matrix.os == 'darwin'
 
-    - name: set env var for win
+    - name: Set env var for win
       run: echo "CFLAGS="-mno-ms-bitfields $CFLAGS"" >> $GITHUB_ENV
       if: matrix.os == 'windows'
     
-    - name: build picotool
+    - name: Build picotool
       run: |
         cd $GITHUB_WORKSPACE/picotool
         git apply $GITHUB_WORKSPACE/rp2040tools/patches/picotool_cmakelists.patch
@@ -90,7 +90,7 @@ jobs:
         mv picotool${{ matrix.extension }} /tmp/
       if: matrix.os != 'darwin'
 
-    - name: build picotool for macos
+    - name: Build picotool for macos
       run: |
         cd $GITHUB_WORKSPACE/picotool
         mkdir build
@@ -100,7 +100,7 @@ jobs:
         mv picotool${{ matrix.extension }} /tmp/
       if: matrix.os == 'darwin'
 
-    - name: build elf2uf2
+    - name: Build elf2uf2
       run: |
         cd $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/
         git apply $GITHUB_WORKSPACE/rp2040tools/patches/elf2uf2_cmakelists.patch
@@ -111,7 +111,7 @@ jobs:
         mv elf2uf2${{ matrix.extension }} /tmp/
       if: matrix.os != 'darwin'
 
-    - name: build elf2uf2 for macos
+    - name: Build elf2uf2 for macos
       run: |
         cd $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/
         mkdir build
@@ -121,10 +121,60 @@ jobs:
         mv elf2uf2${{ matrix.extension }} /tmp/
       if: matrix.os == 'darwin'
 
-    - name: upload artifacts
+    - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: ${{matrix.os}}_${{matrix.arch}}
+        name: tools_${{matrix.os}}_${{matrix.arch}}
         path: |
           /tmp/elf2uf2${{ matrix.extension }}
           /tmp/picotool${{ matrix.extension }}
+
+  build-go:
+    runs-on:
+      ubuntu-latest
+    strategy:
+      matrix:
+        os: [linux, darwin, windows]
+        arch: [amd64]
+        include:
+        - os: linux
+        - os: linux
+          arch: 386
+        - os: linux
+          arch: arm
+        - os: linux
+          arch: arm64
+        - os: darwin
+        - os: windows
+          arch: 386
+          extension: .exe
+        exclude:
+          - os: windows
+            arch: amd64
+    steps:
+    - name: Checkout rp2040tools repository
+      uses: actions/checkout@v2
+      with:
+        repository: arduino/rp2040tools
+        token: ${{ secrets.RP2040_CI_PAT }}
+
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+          go-version: "1.15.8"
+
+    - name: Build rp2040load
+      run: go build
+      env:
+        GOOS: ${{ matrix.os }}
+        GOARCH: ${{ matrix.arch }}
+        CGO_ENABLED: 0
+      
+    - name: Debug print
+      run: file rp2040load${{ matrix.extension }}
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: rp2040load_${{matrix.os}}_${{matrix.arch}}
+        path: rp2040load${{ matrix.extension }}
