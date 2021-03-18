@@ -1,0 +1,118 @@
+name: release
+
+on:
+  push: # only for testing
+
+jobs:
+  build:
+    runs-on:
+      ubuntu-latest
+    env:
+      PICO_SDK_PATH: ${GITHUB_WORKSPACE}/pico-sdk
+      LIBUSB_DIR: /opt/lib/libusb-1.0.20/libusb/
+    strategy:
+      matrix:
+        os: [linux, darwin, windows]
+        include:
+        - os: linux
+          arch: 386
+          cross_compile: i686-ubuntu16.04-linux-gnu
+        - os: linux
+          arch: amd64
+          cross_compile: x86_64-ubuntu16.04-linux-gnu
+        - os: linux
+          arch: arm
+          cross_compile: arm-linux-gnueabihf
+        - os: linux
+          arch: arm64
+          cross_compile: aarch64-linux-gnu
+        - os: darwin
+          arch: amd64
+          cross_compile: x86_64-apple-darwin13
+          cross_compiler: o64-clang
+        - os: windows
+          arch: 386
+          cross_compile: i686-w64-mingw32
+          extension: .exe
+
+    container:
+      image: ghcr.io/arduino/crossbuild:0.1.0
+    
+    steps:
+    - name: Checkout rp2040tools repository
+      uses: actions/checkout@v2
+      with:
+        repository: arduino/rp2040tools
+        path: rp2040tools
+        token: ${{ secrets.RP2040_CI_PAT }}
+
+    - name: Checkout picotool
+      uses: actions/checkout@v2
+      with:
+        repository: raspberrypi/picotool
+        path: picotool
+
+    - name: Checkout pico-sdk
+      uses: actions/checkout@v2
+      with:
+        repository: raspberrypi/pico-sdk
+        path: pico-sdk
+
+    - name: set env vars
+      run: echo "LIBUSBUDEV=/opt/lib/${{ matrix.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
+      if: matrix.os != 'darwin'
+    
+    - name: set env vars for macos
+      run: echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
+      if: matrix.os == 'darwin'
+
+    - name: set env var for win
+      run: echo "CFLAGS="-mno-ms-bitfields $CFLAGS"" >> $GITHUB_ENV
+      if: matrix.os == 'windows'
+    
+    - name: build picotool
+      run: |
+        cd $GITHUB_WORKSPACE/picotool
+        git apply $GITHUB_WORKSPACE/rp2040tools/patches/picotool_cmakelists.patch
+        git apply $GITHUB_WORKSPACE/rp2040tools/patches/windows_mingw.patch
+        mkdir build
+        cd build
+        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
+        make
+      if: matrix.os != 'darwin'
+
+    - name: build picotool for macos
+      run: |
+        cd $GITHUB_WORKSPACE/picotool
+        mkdir build
+        cd build
+        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="-framework IOKit -framework Cocoa" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
+        make
+      if: matrix.os == 'darwin'
+
+    - name: build elf2uf2
+      run: |
+        cd $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/
+        git apply $GITHUB_WORKSPACE/rp2040tools/patches/elf2uf2_cmakelists.patch
+        mkdir build
+        cd build
+        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ ..
+        make
+      if: matrix.os != 'darwin'
+
+    - name: build elf2uf2 for macos
+      run: |
+        cd $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/
+        mkdir build
+        cd build
+        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COM${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="-framework IOKit -framework Cocoa" ..
+        make
+      if: matrix.os == 'darwin'
+
+    - name: upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{matrix.os}}_{{matrix.arch}}
+        path: |
+          $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/build/elf2uf2${{ matrix.extension }}
+          $GITHUB_WORKSPACE/picotool/build/picotool${{ matrix.extension }}
