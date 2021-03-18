@@ -43,7 +43,7 @@ func main() {
 
 	info := []string{filepath.Join(path, "picotool"), "info"}
 	err, _, _ := launchCommandAndWaitForOutput(info, false, true)
-	for i := 0; i < 5 && err != nil; i++ {
+	for i := 0; i < 20 && err != nil; i++ {
 		err, _, _ = launchCommandAndWaitForOutput(info, false, true)
 		time.Sleep(500 * time.Millisecond)
 	}
