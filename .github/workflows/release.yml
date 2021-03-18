@@ -15,11 +15,10 @@ jobs:
         arch: [amd64]
         include:
         - os: linux
+          cross_compile: x86_64-ubuntu16.04-linux-gnu
+        - os: linux
           arch: 386
           cross_compile: i686-ubuntu16.04-linux-gnu
-        - os: linux
-          arch: amd64
-          cross_compile: x86_64-ubuntu16.04-linux-gnu
         - os: linux
           arch: arm
           cross_compile: arm-linux-gnueabihf
@@ -27,7 +26,6 @@ jobs:
           arch: arm64
           cross_compile: aarch64-linux-gnu
         - os: darwin
-          arch: amd64
           cross_compile: x86_64-apple-darwin13
           cross_compiler: o64-clang
         - os: windows
@@ -115,7 +113,7 @@ jobs:
         cd $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/
         mkdir build
         cd build
-        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COM${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="-framework IOKit -framework Cocoa" ..
+        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="-framework IOKit -framework Cocoa" ..
         make
       if: matrix.os == 'darwin'
 
