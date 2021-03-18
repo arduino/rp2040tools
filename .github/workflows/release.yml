@@ -8,7 +8,6 @@ jobs:
     runs-on:
       ubuntu-latest
     env:
-      PICO_SDK_PATH: $PWD/pico-sdk
       LIBUSB_DIR: /opt/lib/libusb-1.0.20/libusb/
     strategy:
       matrix:
@@ -66,11 +65,15 @@ jobs:
         path: pico-sdk
 
     - name: set env vars
-      run: echo "LIBUSBUDEV=/opt/lib/${{ matrix.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
+      run: | 
+        echo "LIBUSBUDEV=/opt/lib/${{ matrix.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
+        echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
       if: matrix.os != 'darwin'
     
     - name: set env vars for macos
-      run: echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
+      run: |
+        echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
+        echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
       if: matrix.os == 'darwin'
 
     - name: set env var for win
