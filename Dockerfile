@@ -1,9 +1,9 @@
-FROM ubuntu:latest
+FROM ubuntu:latest as build
 
 ENV TZ=Europe/Rome
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get update && \
-# TODO add --no-install-recommends
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    apt-get update && \
+    # TODO add --no-install-recommends
     apt-get install -y \
         build-essential \
         # Intall clang compiler used by macos
@@ -67,5 +67,44 @@ RUN CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu /opt/lib/build_libs.sh && \
     # macos does not need eudev
     # CROSS_COMPILER is used to override the compiler 
     CROSS_COMPILER=o64-clang CROSS_COMPILE=x86_64-apple-darwin13 /opt/lib/build_libs.sh
+
+ENTRYPOINT ["/bin/bash"]
+
+FROM ubuntu:latest
+# Copy all the installed toolchains and compiled libs
+COPY --from=build /opt /opt
+ENV TZ=Europe/Rome
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    apt-get update && \
+    # --no-install-recommends
+    apt-get install -y \
+    build-essential \
+        # Intall clang compiler used by macos
+        clang \
+        cmake \
+        dh-autoreconf \
+        git \
+        gperf \
+        # liblzma5 \
+        # Install Windows cross-tools
+        mingw-w64 \
+        pkg-config \
+        tar \
+        # xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+# Set toolchains paths
+# arm-linux-gnueabihf-gcc -> linux_arm
+ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:$PATH
+# aarch64-linux-gnu-gcc -> linux_arm64
+ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:$PATH
+# x86_64-ubuntu16.04-linux-gnu-gcc -> linux_amd64
+ENV PATH=/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:$PATH
+# i686-ubuntu16.04-linux-gnu-gcc -> linux_386
+ENV PATH=/opt/i686-ubuntu16.04-linux-gnu/bin/:$PATH
+# o64-clang -> darwin_amd64
+ENV PATH=/opt/osxcross/target/bin/:$PATH
+
+RUN mkdir -p /workdir
+WORKDIR /workdir
 
 ENTRYPOINT ["/bin/bash"]
