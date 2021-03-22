@@ -39,7 +39,7 @@ jobs:
             arch: amd64
 
     container:
-      image: ghcr.io/arduino/crossbuild:0.1.0
+      image: ghcr.io/arduino/crossbuild:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.RP2040_CI_PAT }}
