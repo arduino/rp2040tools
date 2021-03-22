@@ -38,15 +38,11 @@ RUN cd /opt/osxcross \
     UNATTENDED=1 SDK_VERSION=10.15 ./build.sh
 # Set toolchains paths
 # arm-linux-gnueabihf-gcc -> linux_arm
-ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:$PATH \
-    # aarch64-linux-gnu-gcc -> linux_arm64
-    PATH=/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:$PATH \
-    # x86_64-ubuntu16.04-linux-gnu-gcc -> linux_amd64
-    PATH=/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:$PATH \
-    # i686-ubuntu16.04-linux-gnu-gcc -> linux_386
-    PATH=/opt/i686-ubuntu16.04-linux-gnu/bin/:$PATH \
-    # o64-clang -> darwin_amd64
-    PATH=/opt/osxcross/target/bin/:$PATH
+# aarch64-linux-gnu-gcc -> linux_arm64
+# x86_64-ubuntu16.04-linux-gnu-gcc -> linux_amd64
+# i686-ubuntu16.04-linux-gnu-gcc -> linux_386
+# o64-clang -> darwin_amd64
+ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:/opt/i686-ubuntu16.04-linux-gnu/bin/:/opt/osxcross/target/bin/:$PATH
 
 RUN mkdir -p /workdir
 WORKDIR /workdir
@@ -85,15 +81,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
     && rm -rf /var/lib/apt/lists/*
 # Set toolchains paths
 # arm-linux-gnueabihf-gcc -> linux_arm
-ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:$PATH \
-    # aarch64-linux-gnu-gcc -> linux_arm64
-    PATH=/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:$PATH \
-    # x86_64-ubuntu16.04-linux-gnu-gcc -> linux_amd64
-    PATH=/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:$PATH \
-    # i686-ubuntu16.04-linux-gnu-gcc -> linux_386
-    PATH=/opt/i686-ubuntu16.04-linux-gnu/bin/:$PATH \
-    # o64-clang -> darwin_amd64
-    PATH=/opt/osxcross/target/bin/:$PATH
+# aarch64-linux-gnu-gcc -> linux_arm64
+# x86_64-ubuntu16.04-linux-gnu-gcc -> linux_amd64
+# i686-ubuntu16.04-linux-gnu-gcc -> linux_386
+# o64-clang -> darwin_amd64
+ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:/opt/i686-ubuntu16.04-linux-gnu/bin/:/opt/osxcross/target/bin/:$PATH
 
 RUN mkdir -p /workdir
 WORKDIR /workdir
