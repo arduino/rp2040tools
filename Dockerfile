@@ -26,21 +26,16 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
         # xz-utils \
     && rm -rf /var/lib/apt/lists/*
 # Install toolchains in /opt
-RUN curl downloads.arduino.cc/tools/internal/toolchains.tar.gz | tar -xz "opt" && \
-    curl downloads.arduino.cc/tools/internal/i686-ubuntu16.04-linux-gnu.tar.gz | tar -xzC /opt && \
-    # Remove useless toolchains:
-    rm -r /opt/arm-rpi-4.9.3-linux-gnueabihf/ && \
-    rm -r /opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu/ && \
-    rm -r /opt/*ubuntu12.04* && \
-    #install proper arm toolchains
-    curl -L 'https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf.tar.xz' | tar -xJC /opt && \
-    curl -L 'https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz' | tar -xJC /opt
+RUN curl downloads.arduino.cc/tools/internal/toolchains.tar.gz | tar -xz "opt"
+    # install proper arm toolchains (already present in the toolchains.tar.gz archive)
+    # curl -L 'https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf.tar.xz' | tar -xJC /opt && \
+    # curl -L 'https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz' | tar -xJC /opt
 
-# install macos10.15 sdk
-COPY MacOSX10.15.sdk.tar.xz /opt/osxcross/tarballs/
-# remove old unused macos10.09 sdk because we are using 10.15 one
-RUN rm -rf /opt/osxcross/tarballs/MacOSX10.9.sdk.tar.bz2 && \
-    cd /opt/osxcross; git pull; UNATTENDED=1 SDK_VERSION=10.15 ./build.sh
+RUN cd /opt/osxcross \
+    git pull \
+    # use a specific version of osxcross (it does not have tags)
+    git checkout da2c3d4ff604458a931b08b3af800c5a454136de \
+    UNATTENDED=1 SDK_VERSION=10.15 ./build.sh
 # Set toolchains paths
 # arm-linux-gnueabihf-gcc -> linux_arm
 ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:$PATH \
@@ -64,7 +59,6 @@ RUN CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu /opt/lib/build_libs.sh && \
     CROSS_COMPILE=aarch64-linux-gnu /opt/lib/build_libs.sh && \
     CROSS_COMPILE=i686-ubuntu16.04-linux-gnu /opt/lib/build_libs.sh && \
     CROSS_COMPILE=i686-w64-mingw32 /opt/lib/build_libs.sh && \
-    # macos does not need eudev
     # CROSS_COMPILER is used to override the compiler 
     CROSS_COMPILER=o64-clang CROSS_COMPILE=x86_64-apple-darwin13 /opt/lib/build_libs.sh
 
@@ -76,7 +70,6 @@ COPY --from=build /opt /opt
 ENV TZ=Europe/Rome
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     apt-get update && \
-    # --no-install-recommends
     apt-get install -y \
     build-essential \
         # Intall clang compiler used by macos
@@ -85,12 +78,10 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
         dh-autoreconf \
         git \
         gperf \
-        # liblzma5 \
         # Install Windows cross-tools
         mingw-w64 \
         pkg-config \
         tar \
-        # xz-utils \
     && rm -rf /var/lib/apt/lists/*
 # Set toolchains paths
 # arm-linux-gnueabihf-gcc -> linux_arm
