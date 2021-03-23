@@ -44,7 +44,6 @@ RUN cd /opt/osxcross \
 # o64-clang -> darwin_amd64
 ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:/opt/i686-ubuntu16.04-linux-gnu/bin/:/opt/osxcross/target/bin/:$PATH
 
-RUN mkdir -p /workdir
 WORKDIR /workdir
 
 # Handle libusb and libudev compilation and merging
@@ -57,8 +56,6 @@ RUN CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu /opt/lib/build_libs.sh && \
     CROSS_COMPILE=i686-w64-mingw32 /opt/lib/build_libs.sh && \
     # CROSS_COMPILER is used to override the compiler 
     CROSS_COMPILER=o64-clang CROSS_COMPILE=x86_64-apple-darwin13 /opt/lib/build_libs.sh
-
-ENTRYPOINT ["/bin/bash"]
 
 FROM ubuntu:latest
 # Copy all the installed toolchains and compiled libs
@@ -87,7 +84,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
 # o64-clang -> darwin_amd64
 ENV PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/:/opt/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/:/opt/x86_64-ubuntu16.04-linux-gnu-gcc/bin/:/opt/i686-ubuntu16.04-linux-gnu/bin/:/opt/osxcross/target/bin/:$PATH
 
-RUN mkdir -p /workdir
 WORKDIR /workdir
 
 ENTRYPOINT ["/bin/bash"]
