@@ -195,6 +195,7 @@ jobs:
       TARGET: "/tools/"
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-1" # or https://github.com/aws/aws-cli/issues/5623
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v2 # download all the artifacts
