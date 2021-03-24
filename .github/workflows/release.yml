@@ -207,7 +207,7 @@ jobs:
         do
           chmod -v +x rp2040load_$folder/* && chmod -v +x tools_$folder/*
           mv -v rp2040load_$folder/rp2040load* tools_$folder/
-          tar -cvjf rp2040tools-${{ github.ref }}-$folder.tar.bz2 tools_$folder/
+          tar -cvjf rp2040tools-${GITHUB_REF##*/}-$folder.tar.bz2 tools_$folder/
         done
         mv -v rp2040tools*.tar.bz2 release/
     
