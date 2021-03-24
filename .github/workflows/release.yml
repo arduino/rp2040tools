@@ -88,23 +88,13 @@ jobs:
         fi
         mkdir build
         cd build
-        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
-        make
-        mv picotool${{ matrix.extension }} /tmp/
-      if: matrix.os != 'darwin'
-
-    - name: Build picotool for macos
-      run: |
-        cd $GITHUB_WORKSPACE/picotool
-        if  ls $GITHUB_WORKSPACE/rp2040tools/patches/picotool_*.patch 1> /dev/null 2>&1
-          then git apply $GITHUB_WORKSPACE/rp2040tools/patches/picotool_*.patch
+        if [ "${{ matrix.os }}" = "darwin" ]; then
+          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
+        else
+          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
         fi
-        mkdir build
-        cd build
-        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
         make
         mv picotool${{ matrix.extension }} /tmp/
-      if: matrix.os == 'darwin'
 
     - name: Build elf2uf2
       run: |
@@ -114,23 +104,13 @@ jobs:
         fi
         mkdir build
         cd build
-        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" ..
-        make
-        mv elf2uf2${{ matrix.extension }} /tmp/
-      if: matrix.os != 'darwin'
-
-    - name: Build elf2uf2 for macos
-      run: |
-        cd $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/
-        if  ls $GITHUB_WORKSPACE/rp2040tools/patches/elf2uf2_*.patch 1> /dev/null 2>&1
-          then git apply $GITHUB_WORKSPACE/rp2040tools/patches/elf2uf2_*.patch
+        if [ "${{ matrix.os }}" = "darwin" ]; then
+          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa" ..
+        else
+          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" ..
         fi
-        mkdir build
-        cd build
-        cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa" ..
         make
         mv elf2uf2${{ matrix.extension }} /tmp/
-      if: matrix.os == 'darwin'
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
