@@ -7,14 +7,14 @@ on:
 
 jobs:
   build:
-    name: ${{ github.job }} (${{ matrix.os }}, ${{ matrix.arch }})
+    name: ${{ github.job }} (${{ matrix.config.os }}, ${{ matrix.config.arch }})
     runs-on:
       ubuntu-latest
     env:
       LIBUSB_DIR: /opt/lib/libusb-1.0.20/libusb/
     strategy:
       matrix:
-        configuration:
+        config:
           - os: linux
             arch: amd64
             cross_compile: x86_64-ubuntu16.04-linux-gnu
@@ -64,16 +64,16 @@ jobs:
       run: echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
 
     - name: Set env vars for non-macos
-      run: echo "LIBUSBUDEV=/opt/lib/${{ matrix.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
-      if: matrix.os != 'darwin'
+      run: echo "LIBUSBUDEV=/opt/lib/${{ matrix.config.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
+      if: matrix.config.os != 'darwin'
     
     - name: Set env vars for macos
       run: echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
-      if: matrix.os == 'darwin'
+      if: matrix.config.os == 'darwin'
 
     - name: Set env var for win
       run: echo "CFLAGS="-mno-ms-bitfields $CFLAGS"" >> $GITHUB_ENV
-      if: matrix.os == 'windows'
+      if: matrix.config.os == 'windows'
     
     - name: Build picotool
       run: |
@@ -83,13 +83,13 @@ jobs:
         fi
         mkdir build
         cd build
-        if [ "${{ matrix.os }}" = "darwin" ]; then
-          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
+        if [ "${{ matrix.config.os }}" = "darwin" ]; then
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
         else
-          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
         fi
         make
-        mv picotool${{ matrix.extension }} /tmp/
+        mv picotool${{ matrix.config.extension }} /tmp/
 
     - name: Build elf2uf2
       run: |
@@ -99,44 +99,43 @@ jobs:
         fi
         mkdir build
         cd build
-        if [ "${{ matrix.os }}" = "darwin" ]; then
-          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa" ..
+        if [ "${{ matrix.config.os }}" = "darwin" ]; then
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa" ..
         else
-          cmake -DCMAKE_C_COMPILER=${{ matrix.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" ..
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" ..
         fi
         make
-        mv elf2uf2${{ matrix.extension }} /tmp/
+        mv elf2uf2${{ matrix.config.extension }} /tmp/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: tools_${{matrix.os}}_${{matrix.arch}}
+        name: tools_${{matrix.config.os}}_${{matrix.config.arch}}
         path: |
-          /tmp/elf2uf2${{ matrix.extension }}
-          /tmp/picotool${{ matrix.extension }}
+          /tmp/elf2uf2${{ matrix.config.extension }}
+          /tmp/picotool${{ matrix.config.extension }}
 
   build-go:
+    name: ${{ github.job }} (${{ matrix.config.os }}, ${{ matrix.config.arch }})
     runs-on:
       ubuntu-latest
     strategy:
       matrix:
-        os: [linux, darwin, windows]
-        arch: [amd64]
-        include:
-        - os: linux
-        - os: linux
-          arch: 386
-        - os: linux
-          arch: arm
-        - os: linux
-          arch: arm64
-        - os: darwin
-        - os: windows
-          arch: 386
-          extension: .exe
-        exclude:
-          - os: windows
+        config:
+          - os: linux
             arch: amd64
+          - os: linux
+            arch: 386
+          - os: linux
+            arch: arm
+          - os: linux
+            arch: arm64
+          - os: darwin
+            arch: amd64
+          - os: windows
+            arch: 386
+            extension: .exe
+
     steps:
     - name: Checkout rp2040tools repository
       uses: actions/checkout@v2
@@ -149,15 +148,15 @@ jobs:
     - name: Build rp2040load
       run: go build
       env:
-        GOOS: ${{ matrix.os }}
-        GOARCH: ${{ matrix.arch }}
+        GOOS: ${{ matrix.config.os }}
+        GOARCH: ${{ matrix.config.arch }}
         CGO_ENABLED: 0
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: rp2040load_${{matrix.os}}_${{matrix.arch}}
-        path: rp2040load${{ matrix.extension }}
+        name: rp2040load_${{matrix.config.os}}_${{matrix.config.arch}}
+        path: rp2040load${{ matrix.config.extension }}
 
   create-release:
     runs-on:
