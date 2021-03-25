@@ -7,36 +7,34 @@ on:
 
 jobs:
   build:
+    name: ${{ github.job }} (${{ matrix.os }}, ${{ matrix.arch }})
     runs-on:
       ubuntu-latest
     env:
       LIBUSB_DIR: /opt/lib/libusb-1.0.20/libusb/
     strategy:
       matrix:
-        os: [linux, darwin, windows]
-        arch: [amd64]
-        include:
-        - os: linux
-          cross_compile: x86_64-ubuntu16.04-linux-gnu
-        - os: linux
-          arch: 386
-          cross_compile: i686-ubuntu16.04-linux-gnu
-        - os: linux
-          arch: arm
-          cross_compile: arm-linux-gnueabihf
-        - os: linux
-          arch: arm64
-          cross_compile: aarch64-linux-gnu
-        - os: darwin
-          cross_compile: x86_64-apple-darwin13
-          cross_compiler: o64-clang
-        - os: windows
-          arch: 386
-          cross_compile: i686-w64-mingw32
-          extension: .exe
-        exclude:
-          - os: windows
+        configuration:
+          - os: linux
             arch: amd64
+            cross_compile: x86_64-ubuntu16.04-linux-gnu
+          - os: linux
+            arch: 386
+            cross_compile: i686-ubuntu16.04-linux-gnu
+          - os: linux
+            arch: arm
+            cross_compile: arm-linux-gnueabihf
+          - os: linux
+            arch: arm64
+            cross_compile: aarch64-linux-gnu
+          - os: darwin
+            arch: amd64
+            cross_compile: x86_64-apple-darwin13
+            cross_compiler: o64-clang
+          - os: windows
+            arch: 386
+            cross_compile: i686-w64-mingw32
+            extension: .exe
 
     container:
       image: ghcr.io/arduino/crossbuild:latest
@@ -48,9 +46,7 @@ jobs:
     - name: Checkout rp2040tools repository
       uses: actions/checkout@v2
       with:
-        repository: arduino/rp2040tools
         path: rp2040tools
-        token: ${{ secrets.RP2040_CI_PAT }}
 
     - name: Checkout picotool
       uses: actions/checkout@v2
@@ -65,15 +61,14 @@ jobs:
         path: pico-sdk
 
     - name: Set env vars
-      run: | 
-        echo "LIBUSBUDEV=/opt/lib/${{ matrix.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
-        echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
+      run: echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
+
+    - name: Set env vars for non-macos
+      run: echo "LIBUSBUDEV=/opt/lib/${{ matrix.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
       if: matrix.os != 'darwin'
     
     - name: Set env vars for macos
-      run: |
-        echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
-        echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
+      run: echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
       if: matrix.os == 'darwin'
 
     - name: Set env var for win
@@ -145,9 +140,6 @@ jobs:
     steps:
     - name: Checkout rp2040tools repository
       uses: actions/checkout@v2
-      with:
-        repository: arduino/rp2040tools
-        token: ${{ secrets.RP2040_CI_PAT }}
 
     - name: Install Go
       uses: actions/setup-go@v2
@@ -192,24 +184,11 @@ jobs:
         done
         mv -v rp2040tools*.tar.bz2 release/
     
-    - name: Create Github Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.RP2040_CI_PAT }}
+    - name: Create Github Release and upload artifacts
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
-        body: rp2040tools
-        draft: false
-        prerelease: false
-    
-    - name: Upload release files on Github
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.RP2040_CI_PAT }}
-        tag: ${{ github.ref }}
-        file_glob: true  # If set to true, the file argument can be a glob pattern
-        file: release/*
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: release/*
 
     - name: Upload release files on Arduino downloads servers
       run: aws s3 sync release/ s3://${{ secrets.DOWNLOADS_BUCKET }}${{ env.TARGET }}
