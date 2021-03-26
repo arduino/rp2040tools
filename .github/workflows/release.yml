@@ -1,0 +1,193 @@
+name: release
+
+on:
+  push:
+    tags:
+    - "[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  build:
+    name: build (${{ matrix.config.os }}, ${{ matrix.config.arch }})
+    runs-on:
+      ubuntu-latest
+    env:
+      LIBUSB_DIR: /opt/lib/libusb-1.0.20/libusb/
+    strategy:
+      matrix:
+        config:
+          - os: linux
+            arch: amd64
+            cross_compile: x86_64-ubuntu16.04-linux-gnu
+          - os: linux
+            arch: 386
+            cross_compile: i686-ubuntu16.04-linux-gnu
+          - os: linux
+            arch: arm
+            cross_compile: arm-linux-gnueabihf
+          - os: linux
+            arch: arm64
+            cross_compile: aarch64-linux-gnu
+          - os: darwin
+            arch: amd64
+            cross_compile: x86_64-apple-darwin13
+            cross_compiler: o64-clang
+          - os: windows
+            arch: 386
+            cross_compile: i686-w64-mingw32
+            extension: .exe
+
+    container:
+      image: ghcr.io/arduino/crossbuild:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.RP2040_CI_PAT }}
+    
+    steps:
+    - name: Checkout rp2040tools repository
+      uses: actions/checkout@v2
+      with:
+        path: rp2040tools
+
+    - name: Checkout picotool
+      uses: actions/checkout@v2
+      with:
+        repository: raspberrypi/picotool
+        path: picotool
+
+    - name: Checkout pico-sdk
+      uses: actions/checkout@v2
+      with:
+        repository: raspberrypi/pico-sdk
+        path: pico-sdk
+
+    - name: Set env vars
+      run: echo "PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk" >> $GITHUB_ENV
+
+    - name: Set env vars for non-macos
+      run: echo "LIBUSBUDEV=/opt/lib/${{ matrix.config.cross_compile }}/libusbudev.a" >> $GITHUB_ENV
+      if: matrix.config.os != 'darwin'
+    
+    - name: Set env vars for macos
+      run: echo "LIBUSBUDEV=$LIBUSB_DIR.libs/libusb-1.0.a" >> $GITHUB_ENV
+      if: matrix.config.os == 'darwin'
+
+    - name: Set env var for win
+      run: echo "CFLAGS="-mno-ms-bitfields $CFLAGS"" >> $GITHUB_ENV
+      if: matrix.config.os == 'windows'
+    
+    - name: Build picotool
+      run: |
+        cd $GITHUB_WORKSPACE/picotool
+        if  ls $GITHUB_WORKSPACE/rp2040tools/patches/picotool_*.patch 1> /dev/null 2>&1
+          then git apply $GITHUB_WORKSPACE/rp2040tools/patches/picotool_*.patch
+        fi
+        mkdir build
+        cd build
+        if [ "${{ matrix.config.os }}" = "darwin" ]; then
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
+        else
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -pthread" -DLIBUSB_LIBRARIES=$LIBUSBUDEV -DLIBUSB_INCLUDE_DIR=$LIBUSB_DIR ..
+        fi
+        make
+        mv picotool${{ matrix.config.extension }} /tmp/
+
+    - name: Build elf2uf2
+      run: |
+        cd $GITHUB_WORKSPACE/pico-sdk/tools/elf2uf2/
+        if  ls $GITHUB_WORKSPACE/rp2040tools/patches/elf2uf2_*.patch 1> /dev/null 2>&1
+          then git apply $GITHUB_WORKSPACE/rp2040tools/patches/elf2uf2_*.patch
+        fi
+        mkdir build
+        cd build
+        if [ "${{ matrix.config.os }}" = "darwin" ]; then
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa" ..
+        else
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" ..
+        fi
+        make
+        mv elf2uf2${{ matrix.config.extension }} /tmp/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: tools_${{matrix.config.os}}_${{matrix.config.arch}}
+        path: |
+          /tmp/elf2uf2${{ matrix.config.extension }}
+          /tmp/picotool${{ matrix.config.extension }}
+
+  build-go:
+    name: build-go (${{ matrix.config.os }}, ${{ matrix.config.arch }})
+    runs-on:
+      ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: 386
+          - os: linux
+            arch: arm
+          - os: linux
+            arch: arm64
+          - os: darwin
+            arch: amd64
+          - os: windows
+            arch: 386
+            extension: .exe
+
+    steps:
+    - name: Checkout rp2040tools repository
+      uses: actions/checkout@v2
+
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+          go-version: "1.15.8"
+
+    - name: Build rp2040load
+      run: go build
+      env:
+        GOOS: ${{ matrix.config.os }}
+        GOARCH: ${{ matrix.config.arch }}
+        CGO_ENABLED: 0
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: rp2040load_${{matrix.config.os}}_${{matrix.config.arch}}
+        path: rp2040load${{ matrix.config.extension }}
+
+  create-release:
+    runs-on:
+      ubuntu-latest
+    needs: [build, build-go]
+    env:
+      TARGET: "/tools/"
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-1" # or https://github.com/aws/aws-cli/issues/5623
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v2 # download all the artifacts
+
+    - name: Prepare artifacts for the release
+      run: |
+        mkdir release
+        declare -a target_folders=("linux_amd64" "linux_386" "linux_arm64" "linux_arm" "darwin_amd64" "windows_386")
+        for folder in "${target_folders[@]}"
+        do
+          chmod -v +x rp2040load_$folder/* && chmod -v +x tools_$folder/*
+          mv -v rp2040load_$folder/rp2040load* tools_$folder/
+          tar -cvjf rp2040tools-${GITHUB_REF##*/}-$folder.tar.bz2 tools_$folder/
+        done
+        mv -v rp2040tools*.tar.bz2 release/
+    
+    - name: Create Github Release and upload artifacts
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: release/*
+
+    - name: Upload release files on Arduino downloads servers
+      run: aws s3 sync release/ s3://${{ secrets.DOWNLOADS_BUCKET }}${{ env.TARGET }}
