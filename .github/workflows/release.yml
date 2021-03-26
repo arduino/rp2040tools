@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: ${{ github.job }} (${{ matrix.config.os }}, ${{ matrix.config.arch }})
+    name: build (${{ matrix.config.os }}, ${{ matrix.config.arch }})
     runs-on:
       ubuntu-latest
     env:
@@ -116,7 +116,7 @@ jobs:
           /tmp/picotool${{ matrix.config.extension }}
 
   build-go:
-    name: ${{ github.job }} (${{ matrix.config.os }}, ${{ matrix.config.arch }})
+    name: build-go (${{ matrix.config.os }}, ${{ matrix.config.arch }})
     runs-on:
       ubuntu-latest
     strategy:
