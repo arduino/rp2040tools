@@ -3,7 +3,6 @@ FROM ubuntu:latest as build
 ENV TZ=Europe/Rome
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     apt-get update && \
-    # TODO add --no-install-recommends
     apt-get install -y \
         build-essential \
         # Intall clang compiler used by macos
@@ -17,13 +16,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
         libxml2-dev \
         libssl-dev \
         libz-dev \
-        # liblzma5 \
         # Install Windows cross-tools
         mingw-w64 \
         p7zip-full \
         pkg-config \
         tar \
-        # xz-utils \
     && rm -rf /var/lib/apt/lists/*
 # Install toolchains in /opt
 RUN curl downloads.arduino.cc/tools/internal/toolchains.tar.gz | tar -xz "opt"
