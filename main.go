@@ -15,9 +15,8 @@ import (
 var (
 	verbose = flag.Bool("v", false, "Show verbose logging")
 	binary  = flag.String("D", "", "Path of the elf file to load")
+	version = "0.0.0-dev" // CI will take care of it
 )
-
-const Version = "1.0.1"
 
 func PrintlnVerbose(a ...interface{}) {
 	if *verbose {
@@ -36,7 +35,7 @@ func main() {
 	path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 	flag.Parse()
 
-	PrintlnVerbose(name + " " + Version + " - compiled with " + runtime.Version())
+	PrintlnVerbose(name + " " + version + " - compiled with " + runtime.Version())
 
 	convert := []string{filepath.Join(path, "elf2uf2"), *binary, *binary + ".uf2"}
 	launchCommandAndWaitForOutput(convert, false, false)

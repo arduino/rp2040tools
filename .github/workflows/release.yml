@@ -146,7 +146,7 @@ jobs:
           go-version: "1.15.8"
 
     - name: Build rp2040load
-      run: go build
+      run: go build -ldflags '-X main.version=${GITHUB_REF##*/}'
       env:
         GOOS: ${{ matrix.config.os }}
         GOARCH: ${{ matrix.config.arch }}
