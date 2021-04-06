@@ -168,26 +168,42 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: "us-east-1" # or https://github.com/aws/aws-cli/issues/5623
     steps:
+    - name: Checkout rp2040tools repository # we need package_index.template
+      uses: actions/checkout@v2
+
     - name: Download artifact
       uses: actions/download-artifact@v2 # download all the artifacts
 
-    - name: Prepare artifacts for the release
+    - name: Prepare artifacts for the release and handle package_index
       run: |
         mkdir release
+        package_index=`cat package_index.template | sed s/%%VERSION%%/${GITHUB_REF##*/}/`
         declare -a target_folders=("linux_amd64" "linux_386" "linux_arm64" "linux_arm" "darwin_amd64" "windows_386")
         for folder in "${target_folders[@]}"
         do
           chmod -v +x rp2040load_$folder/* && chmod -v +x tools_$folder/*
           mv -v rp2040load_$folder/rp2040load* tools_$folder/
-          tar -cvjf rp2040tools-${GITHUB_REF##*/}-$folder.tar.bz2 tools_$folder/
+          FILENAME=rp2040tools-${GITHUB_REF##*/}-${folder}.tar.bz2
+          tar -cvjf $FILENAME tools_$folder/
+          T_OS=`echo ${folder} | awk '{print toupper($0)}'`
+          SHASUM=`sha256sum ${FILENAME} | cut -f1 -d" "`
+          SIZE=`stat --printf="%s" ${FILENAME}`
+          package_index=`echo $package_index |
+            sed s/%%FILENAME_${T_OS}%%/${FILENAME}/ |
+            sed s/%%FILENAME_${T_OS}%%/${FILENAME}/ |
+            sed s/%%SIZE_${T_OS}%%/${SIZE}/ |
+            sed s/%%SHA_${T_OS}%%/${SHASUM}/`
         done
         mv -v rp2040tools*.tar.bz2 release/
+        echo ================== CUT ME HERE =====================
+        echo ${package_index}
+        echo ${package_index} > package_index_draft.json
     
     - name: Create Github Release and upload artifacts
       uses: ncipollo/release-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: release/*
+        artifacts: "release/*,package_index_draft.json"
 
     - name: Upload release files on Arduino downloads servers
       run: aws s3 sync release/ s3://${{ secrets.DOWNLOADS_BUCKET }}${{ env.TARGET }}
