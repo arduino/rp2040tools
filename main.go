@@ -51,7 +51,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	load := []string{filepath.Join(path, "picotool"), "load", *binary + ".uf2"}
+	load := []string{filepath.Join(path, "picotool"), "load -v", *binary + ".uf2"}
 	err, _, _ = launchCommandAndWaitForOutput(load, true, false)
 	if err != nil {
 		fmt.Println("")
