@@ -107,6 +107,22 @@ jobs:
         make
         mv elf2uf2${{ matrix.config.extension }} /tmp/
 
+    - name: Build pioasm
+      run: |
+        cd $GITHUB_WORKSPACE/pico-sdk/tools/pioasm/
+        if  ls $GITHUB_WORKSPACE/rp2040tools/patches/pioasm_*.patch 1> /dev/null 2>&1
+          then git apply $GITHUB_WORKSPACE/rp2040tools/patches/pioasm_*.patch
+        fi
+        mkdir build
+        cd build
+        if [ "${{ matrix.config.os }}" = "darwin" ]; then
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compiler }}++ -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -framework IOKit -framework Cocoa" ..
+        else
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cross_compile }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.config.cross_compile }}-g++ -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" ..
+        fi
+        make
+        mv pioasm${{ matrix.config.extension }} /tmp/
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -114,6 +130,7 @@ jobs:
         path: |
           /tmp/elf2uf2${{ matrix.config.extension }}
           /tmp/picotool${{ matrix.config.extension }}
+          /tmp/pioasm${{ matrix.config.extension }}
 
   build-go:
     name: build-go (${{ matrix.config.os }}, ${{ matrix.config.arch }})
