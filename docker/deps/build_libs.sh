@@ -53,7 +53,6 @@ export CPPFLAGS="-P"
 
 cd /opt/lib/ncurses-5.9
 export NCURSES_DIR=`pwd`
-curl "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD" > config.guess
 ./configure --disable-shared --without-debug --without-ada --with-termlib --enable-termcap --host=$CROSS_COMPILE --prefix=${PREFIX}
 make
 make install.libs
