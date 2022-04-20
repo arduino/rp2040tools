@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 export PREFIX=/opt/lib/${CROSS_COMPILE}
 
@@ -23,18 +23,20 @@ if [[ $CROSS_COMPILE == "i686-w64-mingw32" ]] ; then
   cp libusb-win32-bin-1.2.6.0/include/lusb0_usb.h $PREFIX/include
   cp libusb-win32-bin-1.2.6.0/lib/gcc/libusb.a $PREFIX/lib
 else
-
-cd /opt/lib/libusb-compat-0.1.5
-export LIBUSB0_DIR=`pwd`
-PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" ./configure --prefix=${PREFIX} --enable-static --disable-shared --host=${CROSS_COMPILE}
-make
-make install
+  cd /opt/lib/libusb-compat-0.1.5
+  export LIBUSB0_DIR=`pwd`
+  PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" ./configure --prefix=${PREFIX} --enable-static --disable-shared --host=${CROSS_COMPILE}
+  make
+  make install
+fi
 
 cd /opt/lib/libelf-0.8.13
 export LIBELF_DIR=`pwd`
 ./configure --disable-shared --host=$CROSS_COMPILE --prefix=${PREFIX}
 make
 make install
+
+export CPPFLAGS="-P"
 
 cd /opt/lib/ncurses-5.9
 export NCURSES_DIR=`pwd`

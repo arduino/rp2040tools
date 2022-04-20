@@ -18,6 +18,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
         libz-dev \
         # Install Windows cross-tools
         mingw-w64 \
+        xsltproc \
         p7zip-full \
         pkg-config \
         tar \
