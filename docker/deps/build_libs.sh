@@ -62,9 +62,8 @@ fi
 make
 make install.libs
 
-cd /opt/lib/readline-6.3
+cd /opt/lib/readline-8.0
 export READLINE_DIR=`pwd`
-autoconf
 ./configure --prefix=$PREFIX --disable-shared --host=$CROSS_COMPILE
 make
 make install-static
