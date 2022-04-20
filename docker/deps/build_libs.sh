@@ -4,14 +4,18 @@ export PREFIX=/opt/lib/${CROSS_COMPILE}
 
 if [ x$CROSS_COMPILER == x ]; then
 CROSS_COMPILER=${CROSS_COMPILE}-gcc
+CROSS_COMPILER_CXX=${CROSS_COMPILE}-g++
 else
 export CC=$CROSS_COMPILER
 export CXX=$CROSS_COMPILER++
+CROSS_COMPILER=$CC
+CROSS_COMPILER_CXX=$CXX
 fi
 cd /opt/lib/libusb-1.0.20
 export LIBUSB_DIR=`pwd`
 ./configure --prefix=${PREFIX} --disable-udev --enable-static --disable-shared --host=${CROSS_COMPILE}
-make clean
+make distclean
+./configure --prefix=${PREFIX} --disable-udev --enable-static --disable-shared --host=${CROSS_COMPILE}
 make
 make install
 
@@ -34,7 +38,8 @@ else
   cd /opt/lib/libusb-compat-0.1.5
   export LIBUSB0_DIR=`pwd`
   PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" ./configure --prefix=${PREFIX} --enable-static --disable-shared --host=${CROSS_COMPILE}
-  make clean
+  make distclean
+  PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" ./configure --prefix=${PREFIX} --enable-static --disable-shared --host=${CROSS_COMPILE}
   make
   make install
 fi
@@ -48,8 +53,7 @@ if [[ $CROSS_COMPILE == "i686-w64-mingw32" ]] ; then
   CMAKE_EXTRA_FLAG="$CMAKE_EXTRA_FLAG -DCMAKE_TOOLCHAIN_FILE=./cmake/Toolchain-i686-w64-mingw32.cmake"
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" $CMAKE_EXTRA_FLAG -DLIBUSB_INCLUDE_DIR="$PREFIX/include/libusb-1.0" -DLIBFTDI_LIBRARY_DIRS="$PREFIX/lib" -DLIBUSB_LIBRARIES="usb-1.0" ../
-make clean
+cmake -DCMAKE_C_COMPILER=$CROSS_COMPILER -DCMAKE_CXX_COMPILER=$CROSS_COMPILER_CXX -DCMAKE_INSTALL_PREFIX="$PREFIX" $CMAKE_EXTRA_FLAG -DLIBUSB_INCLUDE_DIR="$PREFIX/include/libusb-1.0" -DLIBFTDI_LIBRARY_DIRS="$PREFIX/lib" -DLIBUSB_LIBRARIES="usb-1.0" ../
 make
 make install
 
@@ -57,14 +61,15 @@ cd /opt/lib/libelf-0.8.13
 export LIBELF_DIR=`pwd`
 
 # solve bug with --host not being effective on second level directory
-if [[ x$CC != "o64-clang" ]]; then
-export CC=$CROSS_COMPILE_HOST-gcc
-export AR=$CROSS_COMPILE_HOST-ar
-export RANLIB=$CROSS_COMPILE_HOST-ranlib
+if [[ x$CC != x"o64-clang" ]]; then
+export CC=$CROSS_COMPILE-gcc
+export AR=$CROSS_COMPILE-ar
+export RANLIB=$CROSS_COMPILE-ranlib
 fi
 
 ./configure --disable-shared --host=$CROSS_COMPILE --prefix=${PREFIX}
-make clean
+make distclean
+./configure --disable-shared --host=$CROSS_COMPILE --prefix=${PREFIX}
 make
 make install
 
@@ -78,14 +83,16 @@ cd /opt/lib/ncurses-5.9
 export NCURSES_DIR=`pwd`
 
 ./configure $EXTRAFLAGS --disable-shared --without-debug --without-ada --with-termlib --enable-termcap --without-manpages --without-progs --without-tests --host=$CROSS_COMPILE --prefix=${PREFIX}
-make clean
+make distclean
+./configure $EXTRAFLAGS --disable-shared --without-debug --without-ada --with-termlib --enable-termcap --without-manpages --without-progs --without-tests --host=$CROSS_COMPILE --prefix=${PREFIX}
 make
 make install.libs
 
 cd /opt/lib/readline-8.0
 export READLINE_DIR=`pwd`
 ./configure --prefix=$PREFIX --disable-shared --host=$CROSS_COMPILE
-make clean
+make distclean
+./configure --prefix=$PREFIX --disable-shared --host=$CROSS_COMPILE
 make
 make install-static
 
@@ -93,7 +100,9 @@ if [[ $CROSS_COMPILE != "i686-w64-mingw32" && $CROSS_COMPILE != "x86_64-apple-da
 cd /opt/lib/eudev-3.2.10
 ./autogen.sh
 ./configure --enable-static --disable-gudev --disable-introspection --disable-shared --disable-blkid --disable-kmod --disable-manpages --prefix=$PREFIX --host=${CROSS_COMPILE}
-make clean
+make distclean
+./autogen.sh
+./configure --enable-static --disable-gudev --disable-introspection --disable-shared --disable-blkid --disable-kmod --disable-manpages --prefix=$PREFIX --host=${CROSS_COMPILE}
 make
 make install
 fi
@@ -102,6 +111,8 @@ cd /opt/lib/hidapi
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 ./bootstrap
 ./configure --prefix=$PREFIX --enable-static --disable-shared --host=$CROSS_COMPILE
-make clean
+make distclean
+./bootstrap
+./configure --prefix=$PREFIX --enable-static --disable-shared --host=$CROSS_COMPILE
 make
 make install
