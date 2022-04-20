@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PREFIX=/opt/lib/${CROSS_COMPILE}
+
 if [ x$CROSS_COMPILER == x ]; then
 CROSS_COMPILER=${CROSS_COMPILE}-gcc
 else
