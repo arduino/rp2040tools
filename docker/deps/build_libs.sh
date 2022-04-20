@@ -60,13 +60,6 @@ make install
 cd /opt/lib/libelf-0.8.13
 export LIBELF_DIR=`pwd`
 
-# solve bug with --host not being effective on second level directory
-if [[ x$CC != x"o64-clang" ]]; then
-export CC=$CROSS_COMPILE-gcc
-export AR=$CROSS_COMPILE-ar
-export RANLIB=$CROSS_COMPILE-ranlib
-fi
-
 ./configure --disable-shared --host=$CROSS_COMPILE --prefix=${PREFIX}
 make distclean
 ./configure --disable-shared --host=$CROSS_COMPILE --prefix=${PREFIX}
