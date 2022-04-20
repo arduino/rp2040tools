@@ -30,6 +30,19 @@ else
   make install
 fi
 
+cd /opt/lib/libftdi1-1.4
+mkdir build && cd build
+
+CMAKE_EXTRA_FLAG="-DSHAREDLIBS=OFF -DBUILD_TESTS=OFF -DPYTHON_BINDINGS=OFF -DEXAMPLES=OFF -DFTDI_EEPROM=OFF"
+
+if [[ $CROSS_COMPILE == "i686-w64-mingw32" ]] ; then
+  CMAKE_EXTRA_FLAG="$CMAKE_EXTRA_FLAG -DCMAKE_TOOLCHAIN_FILE=./cmake/Toolchain-i686-w64-mingw32.cmake"
+fi
+
+cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DLIBUSB_INCLUDE_DIR="$PREFIX/include/libusb-1.0" -DLIBFTDI_LIBRARY_DIRS="$PREFIX/lib" -DLIBUSB_LIBRARIES="usb-1.0" ../
+make
+make install
+
 cd /opt/lib/libelf-0.8.13
 export LIBELF_DIR=`pwd`
 ./configure --disable-shared --host=$CROSS_COMPILE --prefix=${PREFIX}
@@ -53,30 +66,13 @@ make install-static
 
 cd /opt/lib/eudev-3.2.10
 ./autogen.sh
-./configure --enable-static --disable-gudev --disable-introspection  --disable-shared --disable-blkid --disable-kmod  --disable-manpages --prefix=$PREFIX --host=${CROSS_COMPILE}
+./configure --enable-static --disable-gudev --disable-introspection --disable-shared --disable-blkid --disable-kmod --disable-manpages --prefix=$PREFIX --host=${CROSS_COMPILE}
 make
 make install
 
 cd /opt/lib/hidapi
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
-#set +e
-#./bootstrap
 ./bootstrap
-#set -e
 ./configure --prefix=$PREFIX --enable-static --disable-shared --host=$CROSS_COMPILE
-make
-make install
-
-
-cd /opt/lib/libftdi1-1.4
-mkdir build
-
-CMAKE_EXTRA_FLAG="-DSHAREDLIBS=OFF -DBUILD_TESTS=OFF -DPYTHON_BINDINGS=OFF -DEXAMPLES=OFF -DFTDI_EEPROM=OFF"
-
-if [[ $CROSS_COMPILE == "i686-w64-mingw32" ]] ; then
-  CMAKE_EXTRA_FLAG="$CMAKE_EXTRA_FLAG -DCMAKE_TOOLCHAIN_FILE=./cmake/Toolchain-i686-w64-mingw32.cmake"
-fi
-
-cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DLIBUSB_INCLUDE_DIR="$PREFIX/include/libusb-1.0" -DLIBFTDI_LIBRARY_DIRS="$PREFIX/lib" -DLIBUSB_LIBRARIES="usb-1.0" ../
 make
 make install
