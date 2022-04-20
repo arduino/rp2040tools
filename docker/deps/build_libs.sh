@@ -31,7 +31,7 @@ else
 fi
 
 cd /opt/lib/libftdi1-1.4
-mkdir build && cd build
+rm -rf build && mkdir build && cd build
 
 CMAKE_EXTRA_FLAG="-DSHAREDLIBS=OFF -DBUILD_TESTS=OFF -DPYTHON_BINDINGS=OFF -DEXAMPLES=OFF -DFTDI_EEPROM=OFF"
 
@@ -39,7 +39,7 @@ if [[ $CROSS_COMPILE == "i686-w64-mingw32" ]] ; then
   CMAKE_EXTRA_FLAG="$CMAKE_EXTRA_FLAG -DCMAKE_TOOLCHAIN_FILE=./cmake/Toolchain-i686-w64-mingw32.cmake"
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DLIBUSB_INCLUDE_DIR="$PREFIX/include/libusb-1.0" -DLIBFTDI_LIBRARY_DIRS="$PREFIX/lib" -DLIBUSB_LIBRARIES="usb-1.0" ../
+cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" $CMAKE_EXTRA_FLAG -DLIBUSB_INCLUDE_DIR="$PREFIX/include/libusb-1.0" -DLIBFTDI_LIBRARY_DIRS="$PREFIX/lib" -DLIBUSB_LIBRARIES="usb-1.0" ../
 make
 make install
 
@@ -53,6 +53,7 @@ export CPPFLAGS="-P"
 
 cd /opt/lib/ncurses-5.9
 export NCURSES_DIR=`pwd`
+curl "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD" > config.guess
 ./configure --disable-shared --without-debug --without-ada --with-termlib --enable-termcap --host=$CROSS_COMPILE --prefix=${PREFIX}
 make
 make install.libs
