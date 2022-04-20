@@ -22,6 +22,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
         p7zip-full \
         pkg-config \
         tar \
+        unzip \
     && rm -rf /var/lib/apt/lists/*
 # Install toolchains in /opt
 RUN curl downloads.arduino.cc/tools/internal/toolchains.tar.gz | tar -xz "opt"
