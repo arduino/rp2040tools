@@ -16,7 +16,7 @@ make install
 if [[ $CROSS_COMPILE == "i686-w64-mingw32" ]] ; then
   # libusb-compat is a mess to compile for win32
   # use a precompiled version from libusb-win32 project
-  wget http://download.sourceforge.net/project/libusb-win32/libusb-win32-releases/1.2.6.0/libusb-win32-bin-1.2.6.0.zip
+  curl http://download.sourceforge.net/project/libusb-win32/libusb-win32-releases/1.2.6.0/libusb-win32-bin-1.2.6.0.zip -o libusb-win32-bin-1.2.6.0.zip -L
   unzip libusb-win32-bin-1.2.6.0.zip
   #mkdir -p $PREFIX/bin/
   #cp libusb-win32-bin-1.2.6.0/bin/x86/libusb0_x86.dll $PREFIX/bin/libusb0.dll
@@ -53,7 +53,12 @@ export CPPFLAGS="-P"
 
 cd /opt/lib/ncurses-5.9
 export NCURSES_DIR=`pwd`
-./configure --disable-shared --without-debug --without-ada --with-termlib --enable-termcap --host=$CROSS_COMPILE --prefix=${PREFIX}
+
+if [[ $CROSS_COMPILE == "i686-w64-mingw32" ]]; then
+EXTRAFLAGS="--enable-term-driver --enable-sp-funcs"
+fi
+
+./configure $EXTRAFLAGS --disable-shared --without-debug --without-ada --with-termlib --enable-termcap --host=$CROSS_COMPILE --prefix=${PREFIX}
 make
 make install.libs
 
