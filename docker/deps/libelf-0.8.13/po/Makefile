@@ -1,4 +1,3 @@
-# Generated automatically from Makefile.in by configure.
 # po/Makefile for libelf.
 # Copyright (C) 1995 - 2006 Michael Riepe
 # 
@@ -20,26 +19,26 @@
 
 instroot =
 
-prefix = /home/martino/avrdude-build-script/objdir
+prefix = 
 exec_prefix = ${prefix}
-localedir = $(prefix)/share/locale
+localedir = 
 
-CC = gcc
+CC = i686-w64-mingw32-gcc
 RM = rm -f
 MV = mv -f
 INSTALL = /bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 
 GENCAT = 
-GMSGFMT = /bin/msgfmt
-MSGFMT = /bin/msgfmt
-XGETTEXT = /bin/xgettext
-MSGMERGE = /bin/msgmerge
+GMSGFMT = 
+MSGFMT = 
+XGETTEXT = 
+MSGMERGE = 
 
-CFLAGS = -w -O2 
+CFLAGS = -g -O2
 CPPFLAGS = 
 DEFS = -DHAVE_CONFIG_H
-LDFLAGS = -s 
+LDFLAGS = 
 LIBS = 
 LIBINTL = 
 
@@ -53,6 +52,7 @@ SHELL = /bin/sh
 
 srcdir = .
 top_srcdir = ..
+
 
 topdir = ..
 subdir = po
@@ -82,9 +82,9 @@ DISTFILES = \
 
 POTFILES = $(top_srcdir)/lib/errors.h
 
-CATALOGS =  de.gmo
-CATOBJEXT = .gmo
-INSTOBJEXT = .mo
+CATALOGS = 
+CATOBJEXT = 
+INSTOBJEXT = 
 
 all: $(CATALOGS)
 
