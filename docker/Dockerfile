@@ -74,6 +74,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
         mingw-w64 \
         pkg-config \
         tar \
+        bison \
+        flex \
     && rm -rf /var/lib/apt/lists/*
 # Set toolchains paths
 # arm-linux-gnueabihf-gcc -> linux_arm
