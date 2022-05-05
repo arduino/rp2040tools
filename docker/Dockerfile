@@ -54,7 +54,7 @@ RUN CROSS_COMPILE=x86_64-ubuntu16.04-linux-gnu /opt/lib/build_libs.sh && \
     CROSS_COMPILE=i686-ubuntu16.04-linux-gnu /opt/lib/build_libs.sh && \
     CROSS_COMPILE=i686-w64-mingw32 /opt/lib/build_libs.sh && \
     # CROSS_COMPILER is used to override the compiler 
-    CROSS_COMPILER=o64-clang CROSS_COMPILE=x86_64-apple-darwin13 /opt/lib/build_libs.sh
+    CROSS_COMPILER=o64-clang CROSS_COMPILE=x86_64-apple-darwin13 AR=/opt/osxcross/target/bin/x86_64-apple-darwin13-ar RANLIB=/opt/osxcross/target/bin/x86_64-apple-darwin13-ranlib /opt/lib/build_libs.sh
 
 FROM ubuntu:latest
 # Copy all the installed toolchains and compiled libs
