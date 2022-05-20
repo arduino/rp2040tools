@@ -1,7 +1,6 @@
 # rp2040tools
 
 This repo contains all the tools used by Arduino to upload compiled code to the boards that use the rp2040 processor.
-The repo includes also the dependencies and the Dockerfile used to crosscompile the tools.
 
 ## Tools
 
