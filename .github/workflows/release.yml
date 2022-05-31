@@ -205,7 +205,7 @@ jobs:
           T_OS=`echo ${folder} | awk '{print toupper($0)}'`
           SHASUM=`sha256sum ${FILENAME} | cut -f1 -d" "`
           SIZE=`stat --printf="%s" ${FILENAME}`
-          package_index=`echo $package_index |
+          package_index=`echo "$package_index" |
             sed s/%%FILENAME_${T_OS}%%/${FILENAME}/ |
             sed s/%%FILENAME_${T_OS}%%/${FILENAME}/ |
             sed s/%%SIZE_${T_OS}%%/${SIZE}/ |
@@ -213,8 +213,8 @@ jobs:
         done
         mv -v rp2040tools*.tar.bz2 release/
         echo ================== CUT ME HERE =====================
-        echo ${package_index}
-        echo ${package_index} > package_index_draft.json
+        echo "${package_index}"
+        echo "${package_index}" > package_index_draft.json
     
     - name: Create Github Release and upload artifacts
       uses: ncipollo/release-action@v1
