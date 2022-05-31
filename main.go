@@ -15,6 +15,7 @@ import (
 var (
 	verbose = flag.Bool("v", false, "Show verbose logging")
 	binary  = flag.String("D", "", "Path of the elf file to load")
+	verify  = flag.Bool("y", false, "Verify flash after upload")
 	version = "0.0.0-dev" // CI will take care of it
 )
 
@@ -51,7 +52,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	load := []string{filepath.Join(path, "picotool"), "load", *binary + ".uf2"}
+	load := []string{filepath.Join(path, "picotool"), "load"}
+	if *verify {
+		load = append(load, "-v")
+	}
+	load = append(load, *binary+".uf2")
 	err, _, _ = launchCommandAndWaitForOutput(load, true, false)
 	if err != nil {
 		fmt.Println("")
