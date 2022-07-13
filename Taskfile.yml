@@ -1,0 +1,32 @@
+# See: https://taskfile.dev/#/usage
+version: "3"
+
+vars:
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/release-go-task/Taskfile.yml
+  PROJECT_NAME: rp2040load
+  DIST_DIR: "dist"
+  # build vars
+  COMMIT:
+    sh: echo "$(git log --no-show-signature -n 1 --format=%h)"
+  TIMESTAMP:
+    sh: echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  TIMESTAMP_SHORT:
+    sh: echo "{{now | date "20060102"}}"
+  TAG:
+    sh: echo "$(git tag --points-at=HEAD 2> /dev/null | head -n1)"
+  VERSION: "{{if .NIGHTLY}}nightly-{{.TIMESTAMP_SHORT}}{{else if .TAG}}{{.TAG}}{{else}}{{.PACKAGE_NAME_PREFIX}}git-snapshot{{end}}"
+  CONFIGURATION_PACKAGE: main
+  LDFLAGS: >-
+    -ldflags
+    '
+    -X {{.CONFIGURATION_PACKAGE}}.version={{.VERSION}}
+    '
+  # Path of the project's primary Go module:
+  DEFAULT_GO_MODULE_PATH: ./
+tasks:
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/go-task/Taskfile.yml
+  go:build:
+    desc: Build the Go code
+    dir: "{{.DEFAULT_GO_MODULE_PATH}}"
+    cmds:
+      - go build -v {{.LDFLAGS}}
