@@ -1,5 +1,3 @@
-module facchinm/rp2040load
+module github.com/arduino/rp2040load
 
 go 1.16
-
-require github.com/mattn/go-shellwords v1.0.11
