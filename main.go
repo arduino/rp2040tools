@@ -19,12 +19,14 @@ var (
 	version = "0.0.0-dev" // CI will take care of it
 )
 
+// PrintlnVerbose executes Println of the interface if verbose
 func PrintlnVerbose(a ...interface{}) {
 	if *verbose {
 		fmt.Println(a...)
 	}
 }
 
+// PrintVerbose executes Print of the interface if verbose
 func PrintVerbose(a ...interface{}) {
 	if *verbose {
 		fmt.Print(a...)
@@ -42,9 +44,9 @@ func main() {
 	launchCommandAndWaitForOutput(convert, false, false)
 
 	info := []string{filepath.Join(path, "picotool"), "info"}
-	err, _, _ := launchCommandAndWaitForOutput(info, false, true)
+	_, _, err := launchCommandAndWaitForOutput(info, false, true)
 	for i := 0; i < 20 && err != nil; i++ {
-		err, _, _ = launchCommandAndWaitForOutput(info, false, true)
+		_, _, err = launchCommandAndWaitForOutput(info, false, true)
 		time.Sleep(500 * time.Millisecond)
 	}
 	if err != nil {
@@ -57,14 +59,14 @@ func main() {
 		load = append(load, "-v")
 	}
 	load = append(load, *binary+".uf2")
-	err, _, _ = launchCommandAndWaitForOutput(load, true, false)
+	_, _, err = launchCommandAndWaitForOutput(load, true, false)
 	if err != nil {
 		fmt.Println("")
 		os.Exit(1)
 	}
 
 	reboot := []string{filepath.Join(path, "picotool"), "reboot"}
-	err, _, _ = launchCommandAndWaitForOutput(reboot, false, false)
+	_, _, err = launchCommandAndWaitForOutput(reboot, false, false)
 	if err != nil {
 		fmt.Println("")
 		os.Exit(1)
@@ -74,14 +76,14 @@ func main() {
 	os.Exit(0)
 }
 
-func launchCommandAndWaitForOutput(command []string, print_output bool, show_spinner bool) (error, bool, string) {
+func launchCommandAndWaitForOutput(command []string, printOutput bool, showSpinner bool) (bool, string, error) {
 	oscmd := exec.Command(command[0], command[1:]...)
 	tellCommandNotToSpawnShell(oscmd)
 	stdout, _ := oscmd.StdoutPipe()
 	stderr, _ := oscmd.StderrPipe()
 	multi := io.MultiReader(stdout, stderr)
 
-	if print_output && *verbose {
+	if printOutput && *verbose {
 		oscmd.Stdout = os.Stdout
 		oscmd.Stderr = os.Stderr
 	}
@@ -90,24 +92,24 @@ func launchCommandAndWaitForOutput(command []string, print_output bool, show_spi
 	in.Split(bufio.ScanRunes)
 	found := false
 	out := ""
-	if show_spinner {
+	if showSpinner {
 		fmt.Printf(".")
 	}
 	lastPrint := time.Now()
 	for in.Scan() {
-		if show_spinner && time.Since(lastPrint) > time.Second {
+		if showSpinner && time.Since(lastPrint) > time.Second {
 			fmt.Printf(".")
 			lastPrint = time.Now()
 		}
 		out += in.Text()
 	}
 	err = oscmd.Wait()
-	return err, found, out
+	return found, out, err
 }
 
-func launchCommandBackground(command []string) (error, bool) {
+func launchCommandBackground(command []string) (bool, error) {
 	oscmd := exec.Command(command[0], command[1:]...)
 	tellCommandNotToSpawnShell(oscmd)
 	err := oscmd.Start()
-	return err, false
+	return false, err
 }
