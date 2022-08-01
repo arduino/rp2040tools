@@ -3,6 +3,7 @@
 [![Check Go status](https://github.com/arduino/rp2040tools/actions/workflows/check-go-task.yml/badge.svg)](https://github.com/arduino/rp2040tools/actions/workflows/check-go-task.yml)
 [![Check Markdown status](https://github.com/arduino/rp2040tools/actions/workflows/check-markdown-task.yml/badge.svg)](https://github.com/arduino/rp2040tools/actions/workflows/check-markdown-task.yml)
 [![Check Prettier Formatting status](https://github.com/arduino/rp2040tools/actions/workflows/check-prettier-formatting-task.yml/badge.svg)](https://github.com/arduino/rp2040tools/actions/workflows/check-prettier-formatting-task.yml)
+[![Check Taskfiles status](https://github.com/arduino/rp2040tools/actions/workflows/check-taskfiles.yml/badge.svg)](https://github.com/arduino/rp2040tools/actions/workflows/check-taskfiles.yml)
 
 This repo contains all the tools used by Arduino to upload compiled code to the boards that use the rp2040 processor.
 
