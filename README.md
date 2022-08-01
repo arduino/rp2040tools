@@ -2,7 +2,7 @@
 
 [![Check Go status](https://github.com/arduino/rp2040tools/actions/workflows/check-go-task.yml/badge.svg)](https://github.com/arduino/rp2040tools/actions/workflows/check-go-task.yml)
 [![Check Markdown status](https://github.com/arduino/rp2040tools/actions/workflows/check-markdown-task.yml/badge.svg)](https://github.com/arduino/rp2040tools/actions/workflows/check-markdown-task.yml)
-
+[![Check Prettier Formatting status](https://github.com/arduino/rp2040tools/actions/workflows/check-prettier-formatting-task.yml/badge.svg)](https://github.com/arduino/rp2040tools/actions/workflows/check-prettier-formatting-task.yml)
 
 This repo contains all the tools used by Arduino to upload compiled code to the boards that use the rp2040 processor.
 
@@ -14,6 +14,7 @@ This repo contains all the tools used by Arduino to upload compiled code to the 
 - [**pioasm**](https://github.com/raspberrypi/pico-sdk/tree/master/tools/pioasm)
 
 ## CI
+
 The CI is responsible for building and uploading the tools
 The [release workflow](https://github.com/arduino/rp2040tools/blob/master/.github/workflows/release.yml) is divided in:
 
