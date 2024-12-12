@@ -181,12 +181,17 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
+    environment: production
     needs: [build, build-go]
+    permissions:
+      contents: write
+      id-token: write # This is required for requesting the JWT
     env:
       TARGET: "/tools/"
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: "us-east-1" # or https://github.com/aws/aws-cli/issues/5623
+      PROJECT_NAME: rp2040tools
     steps:
       - name: Checkout rp2040tools repository # we need package_index.template
         uses: actions/checkout@v4
@@ -224,6 +229,13 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: "release/*,package_index_draft.json"
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: "github_${{ env.PROJECT_NAME }}"
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload release files on Arduino downloads servers
         run: aws s3 sync release/ s3://${{ secrets.DOWNLOADS_BUCKET }}${{ env.TARGET }}
