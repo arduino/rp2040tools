@@ -123,7 +123,7 @@ jobs:
           mv pioasm${{ matrix.config.extension }} /tmp/
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: tools_${{matrix.config.os}}_${{matrix.config.arch}}
           path: |
@@ -174,7 +174,7 @@ jobs:
           CGO_ENABLED: 0
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: rp2040load_${{matrix.config.os}}_${{matrix.config.arch}}
           path: rp2040load${{ matrix.config.extension }}
