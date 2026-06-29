@@ -5,5 +5,8 @@
     "markdown-link-check": "^3.10.2",
     "markdownlint-cli": "^0.31.1",
     "prettier": "^2.7.1"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
