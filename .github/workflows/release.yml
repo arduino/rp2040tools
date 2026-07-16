@@ -37,9 +37,6 @@ jobs:
 
     container:
       image: ghcr.io/arduino/crossbuild:0.2.2
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.RP2040_CI_PAT }}
 
     steps:
       - name: Checkout rp2040tools repository
