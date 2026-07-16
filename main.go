@@ -17,6 +17,7 @@ var (
 	binary         = flag.String("D", "", "Path of the elf file to load")
 	verify         = flag.Bool("y", false, "Verify flash after upload")
 	skipConversion = flag.Bool("n", false, "Skip elf2uf2 conversion and load the pre-generated .uf2 file")
+	skipReboot     = flag.Bool("R", false, "Skip rebooting the board after upload")
 	version        = "0.0.0-dev" // CI will take care of it
 )
 
@@ -74,11 +75,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	reboot := []string{filepath.Join(path, "picotool"), "reboot"}
-	_, _, err = launchCommandAndWaitForOutput(reboot, false, false)
-	if err != nil {
-		fmt.Println("")
-		os.Exit(1)
+	if !*skipReboot {
+		reboot := []string{filepath.Join(path, "picotool"), "reboot"}
+		_, _, err = launchCommandAndWaitForOutput(reboot, false, false)
+		if err != nil {
+			fmt.Println("")
+			os.Exit(1)
+		}
 	}
 
 	fmt.Println("")
