@@ -36,7 +36,7 @@ jobs:
             extension: .exe
 
     container:
-      image: ghcr.io/arduino/crossbuild:0.1.1
+      image: ghcr.io/arduino/crossbuild:0.2.2
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.RP2040_CI_PAT }}
