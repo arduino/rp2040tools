@@ -13,10 +13,12 @@ import (
 )
 
 var (
-	verbose = flag.Bool("v", false, "Show verbose logging")
-	binary  = flag.String("D", "", "Path of the elf file to load")
-	verify  = flag.Bool("y", false, "Verify flash after upload")
-	version = "0.0.0-dev" // CI will take care of it
+	verbose        = flag.Bool("v", false, "Show verbose logging")
+	binary         = flag.String("D", "", "Path of the elf file to load")
+	verify         = flag.Bool("y", false, "Verify flash after upload")
+	skipConversion = flag.Bool("n", false, "Skip elf2uf2 conversion and load the pre-generated .uf2 file")
+	skipReboot     = flag.Bool("R", false, "Skip rebooting the board after upload")
+	version        = "0.0.0-dev" // CI will take care of it
 )
 
 // PrintlnVerbose executes Println of the interface if verbose
@@ -40,8 +42,16 @@ func main() {
 
 	PrintlnVerbose(name + " " + version + " - compiled with " + runtime.Version())
 
-	convert := []string{filepath.Join(path, "elf2uf2"), *binary, *binary + ".uf2"}
-	launchCommandAndWaitForOutput(convert, false, false)
+	// When -n is passed the UF2 is already generated beforehand (e.g. by a build
+	// hook that uses a custom address/family id, as in the Zephyr flow). Running
+	// elf2uf2 on the input in that case would truncate/destroy the pre-existing
+	// UF2 and then fail, so skip the conversion entirely and load the input as-is.
+	uf2 := *binary
+	if !*skipConversion {
+		uf2 = *binary + ".uf2"
+		convert := []string{filepath.Join(path, "elf2uf2"), *binary, uf2}
+		launchCommandAndWaitForOutput(convert, false, false)
+	}
 
 	info := []string{filepath.Join(path, "picotool"), "info"}
 	_, _, err := launchCommandAndWaitForOutput(info, false, true)
@@ -58,18 +68,20 @@ func main() {
 	if *verify {
 		load = append(load, "-v")
 	}
-	load = append(load, *binary+".uf2")
+	load = append(load, uf2)
 	_, _, err = launchCommandAndWaitForOutput(load, true, false)
 	if err != nil {
 		fmt.Println("")
 		os.Exit(1)
 	}
 
-	reboot := []string{filepath.Join(path, "picotool"), "reboot"}
-	_, _, err = launchCommandAndWaitForOutput(reboot, false, false)
-	if err != nil {
-		fmt.Println("")
-		os.Exit(1)
+	if !*skipReboot {
+		reboot := []string{filepath.Join(path, "picotool"), "reboot"}
+		_, _, err = launchCommandAndWaitForOutput(reboot, false, false)
+		if err != nil {
+			fmt.Println("")
+			os.Exit(1)
+		}
 	}
 
 	fmt.Println("")
