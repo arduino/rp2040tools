@@ -11,7 +11,7 @@ This repo contains all the tools used by Arduino to upload compiled code to the 
 ## Tools
 
 - [**picotool**](https://github.com/raspberrypi/picotool): a tool for interacting with a RP2040 device in BOOTSEL mode, or with a RP2040 binary
-- [**elf2uf2**](https://github.com/raspberrypi/pico-sdk/tree/master/tools/elf2uf2): a tool to convert binary format
+- [**elf2uf2**](https://github.com/raspberrypi/pico-sdk/tree/1.5.1/tools/elf2uf2): a tool to convert binary format
 - **rp2040load** is a go tool which orchestrates the other two
 - [**pioasm**](https://github.com/raspberrypi/pico-sdk/tree/master/tools/pioasm)
 
